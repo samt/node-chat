@@ -6,6 +6,6 @@
 		"start": "node app"
 	},
 	"dependencies": {
-		"socket.io": "*",
+		"socket.io": "*"
 	}
 }
