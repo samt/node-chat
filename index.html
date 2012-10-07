@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<title>Chat demo</title>
+		<style>
+			#chatwindow {
+				display:none;
+			}
+			#chatwindow input {
+				width: 300px;
+			}
+			#message-viewport {
+				margin-bottom: 10px;
+				padding: 5px;
+				border: 1px solid #000;
+				width: 400px;
+				height: 300px;
+				font-family: monospace;
+				overflow-y: scroll;
+				float:left;
+			}
+			#message-users {
+				margin: 0 0 10px 10px;
+				padding: 5px;
+				border: 1px solid #000;
+				height: 300px;
+				min-width: 100px;
+				overflow-y: scroll;
+				float:left;
+				text-align: right;
+			}
+			#error {
+				font-color: #A00;
+				font-weight: bold;
+			}
+			.clear {
+				clear:both;
+			}
+			.join {
+				font-color: #0A0;
+			}
+			.quit {
+				font-color: #A00;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="chatwindow">
+			<div id="message-container">
+				<div id="message-viewport"></div>
+				<div id="message-users"></div>
+			</div>
+			<div class="clear"></div>
+			&lt; <span id="nick"></span> &gt; <input type="text" id="message" name="message"> <button id="send">send</button>
+			<br><br>
+			<a href="">logout</a>
+		</div>
+
+		<div id="loginwindow">
+			nickname: <input type="text" id="nickname"> <button id="go">go</button>
+			<br><span id="error"></span>
+		</div>
+
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+		<script src="https://raw.github.com/LearnBoost/socket.io-client/master/dist/socket.io.min.js"></script>
+		<script type="text/javascript">
+			$(function() {
+				var socket = io.connect('http://localhost');
+				var nick = '';
+				var users = [];
+
+				// custom event to update users
+				$('#message-users').on('update-users', function() {
+					$(this).html('');
+					users.sort();
+					for (var i = 0; i < users.length; i++) {
+						$(this).append('<div>' + users[i] + '</div>')
+					}
+				});
+
+				// Trigger "go" on the <enter> or <return> keypress
+				$('#nickname').on('keypress', function(e) {
+					if (e.which == 13) $('#go').trigger('click');
+				});
+
+				$('#go').on('click', function() {
+					nick = $('#nickname').val();
+					socket.emit('nick', nick);
+				});
+
+				// send a message
+				$('#send').on('click', function() {
+					var msg = $('#message').val();
+					socket.emit('msg', msg);
+					$('#message-viewport').append('<div>&lt;' + nick + '&gt; ' + msg + '</div>');
+					$('#message').val('');
+				});
+
+				// Trigger "send" on the <enter> or <return> keypress
+				$('#message').on('keypress', function(e) {
+					if (e.which == 13) $('#send').trigger('click');
+				});
+
+				// for hanlding bad nicks 
+				socket.on('joinerr', function() {
+					$('#error').val('nickname is invalid or is already in use');
+					$('#nickname').val('');
+					nick = '';
+				});
+
+				// fired when you actually join the room
+				socket.on('join', function(userlist) {
+					$('#nick').html(nick);
+					users = userlist;
+
+					$('#message-users').trigger('update-users');
+					$('#loginwindow').remove();
+					$('#chatwindow').show();
+				});
+
+				// when any user joins
+				socket.on('userjoin', function(u) {
+					users.push(u);
+					$('#message-users').trigger('update-users');
+					$('#message-viewport').append('<div class="join"> -- ' + u + ' has joined -- </div>');
+				});
+
+				// when any user leaves
+				socket.on('userquit', function(u) {
+					users.splice(users.indexOf(u), 1);
+					$('#message-users').trigger('update-users');
+					$('#message-viewport').append('<div class="quit"> -- ' + u + ' has quit -- </div>');
+				});
+
+				socket.on('msg', function(m) {
+					$('#message-viewport').append('<div>&lt;' + m.nick + '&gt; ' + m.text + '</div>');
+				});
+			});
+		</script>
+	</body>
+</html>
