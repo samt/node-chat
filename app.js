@@ -27,8 +27,13 @@ users.contains = function(k) {
 }
 
 String.prototype.escape = function() {
-	return this.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+	return this.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
+
+String.prototype.trim = function() {
+	return this.replace(/^\s+/,'').replace(/\s+$/,'');
+}
+
 
 var io = require('socket.io').listen(server);
 io.sockets.on('connection', function(sock) {
@@ -47,7 +52,7 @@ io.sockets.on('connection', function(sock) {
 	});
 
 	sock.on('msg', function(msg) {
-		sock.broadcast.emit('msg', {nick: users[sock.id], text: msg.escape()});
+		sock.broadcast.emit('msg', {nick: users[sock.id], text: msg.escape().trim()});
 	});
 
 	sock.on('disconnect', function () {

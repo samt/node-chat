@@ -68,11 +68,17 @@
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
 		<script src="https://raw.github.com/LearnBoost/socket.io-client/master/dist/socket.io.min.js"></script>
 		<script type="text/javascript">
+			String.prototype.escape = function() {
+				return this.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+			}
+
+			if (typeof String.prototype.trim != 'function') {
+				String.prototype.trim = function() {
+					return this.replace(/^\s+/,'').replace(/\s+$/,'');
+				};
+			}
+
 			$(function() {
-				String.prototype.escape = function() {
-					return this.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-				}
-				
 				var socket = io.connect();
 				var nick = '';
 				var users = [];
@@ -100,9 +106,9 @@
 
 				// send a message
 				$('#send').on('click', function() {
-					var msg = $('#message').val().escape();
+					var msg = $('#message').val();
 					socket.emit('msg', msg);
-					$('#message-viewport').append('<div>&lt;' + nick + '&gt; ' + msg + '</div>');
+					$('#message-viewport').append('<div>&lt;' + nick + '&gt; ' + msg.escape() + '</div>');
 					$("#message-viewport").scrollTop($("#message-viewport")[0].scrollHeight);
 					$('#message').val('');
 				});
