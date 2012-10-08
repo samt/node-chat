@@ -123,7 +123,7 @@
 					$("#message-viewport").scrollTop($("#message-viewport")[0].scrollHeight);
 				},
 				message: function(nick, message) {
-					$('#message-viewport').append('<div>&lt;' + nick + '&gt; ' + message.autoLink() + '</div>');
+					$('#message-viewport').append('<div>&lt;' + nick + '&gt; ' + message.autoLink({target: "_blank"}) + '</div>');
 					this.fixscroll();
 				},
 				join: function(nick) {
