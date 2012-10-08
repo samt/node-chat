@@ -107,6 +107,9 @@
 				// send a message
 				$('#send').on('click', function() {
 					var msg = $('#message').val();
+					if (msg.trim().length == 0) {
+						return;
+					}
 					socket.emit('msg', msg);
 					$('#message-viewport').append('<div>&lt;' + nick + '&gt; ' + msg.escape() + '</div>');
 					$("#message-viewport").scrollTop($("#message-viewport")[0].scrollHeight);
