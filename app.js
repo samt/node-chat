@@ -26,11 +26,17 @@ users.contains = function(k) {
 	return false;
 }
 
+String.prototype.escape = function() {
+	return this.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
+
 var io = require('socket.io').listen(server);
 io.sockets.on('connection', function(sock) {
+	users[sock.id] = '';
+
 	// for nicknames!
 	sock.on('nick', function(nickname) {
-		if (!users.contains(nickname)) {
+		if (!users.contains(nickname) && nickname == nickname.escape()) {
 			users[sock.id] = nickname;
 			sock.emit('join', users.prepare());
 			sock.broadcast.emit('userjoin', nickname);
@@ -41,12 +47,14 @@ io.sockets.on('connection', function(sock) {
 	});
 
 	sock.on('msg', function(msg) {
-		sock.broadcast.emit('msg', {nick: users[sock.id], text: msg});
+		sock.broadcast.emit('msg', {nick: users[sock.id], text: msg.escape()});
 	});
 
 	sock.on('disconnect', function () {
 		var nick = users[sock.id];
-		delete users[sock.id];
-		io.sockets.emit('userquit', nick);
+		if (nick) {
+			delete users[sock.id];
+			io.sockets.emit('userquit', nick);
+		}
 	});
 });

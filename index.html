@@ -27,10 +27,12 @@
 				min-width: 100px;
 				overflow-y: scroll;
 				float:left;
-				text-align: right;
 			}
-			#error {
-				font-color: #A00;
+			.mono {
+				font-family: monospace;
+			}
+			.error {
+				color: #A00;
 				font-weight: bold;
 			}
 			.clear {
@@ -51,14 +53,14 @@
 				<div id="message-users"></div>
 			</div>
 			<div class="clear"></div>
-			&lt; <span id="nick"></span> &gt; <input type="text" id="message" name="message"> <button id="send">send</button>
+			<span class="mono">&lt;<span id="nick"></span>&gt;</span> <input type="text" id="message" name="message"> <button id="send">send</button>
 			<br><br>
 			<a href="">logout</a>
 		</div>
 
 		<div id="loginwindow">
 			nickname: <input type="text" id="nickname"> <button id="go">go</button>
-			<br><span id="error"></span>
+			<br><span id="nickerr" class="error"></span>
 		</div>
 
 		<a href="https://github.com/samt/node-chat"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png" alt="Fork me on GitHub"></a>
@@ -67,9 +69,15 @@
 		<script src="https://raw.github.com/LearnBoost/socket.io-client/master/dist/socket.io.min.js"></script>
 		<script type="text/javascript">
 			$(function() {
+				String.prototype.escape = function() {
+					return this.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+				}
+				
 				var socket = io.connect();
 				var nick = '';
 				var users = [];
+
+				$('#nickname').focus();
 
 				// custom event to update users
 				$('#message-users').on('update-users', function() {
@@ -92,7 +100,7 @@
 
 				// send a message
 				$('#send').on('click', function() {
-					var msg = $('#message').val();
+					var msg = $('#message').val().escape();
 					socket.emit('msg', msg);
 					$('#message-viewport').append('<div>&lt;' + nick + '&gt; ' + msg + '</div>');
 					$("#message-viewport").scrollTop($("#message-viewport")[0].scrollHeight);
@@ -106,7 +114,7 @@
 
 				// for hanlding bad nicks 
 				socket.on('joinerr', function() {
-					$('#error').val('nickname is invalid or is already in use');
+					$('#nickerr').html('nickname is invalid or is already in use');
 					$('#nickname').val('');
 					nick = '';
 				});
@@ -119,6 +127,7 @@
 					$('#message-users').trigger('update-users');
 					$('#loginwindow').remove();
 					$('#chatwindow').show();
+					$('#message').focus();
 				});
 
 				// when any user joins
