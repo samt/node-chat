@@ -41,7 +41,7 @@ io.sockets.on('connection', function(sock) {
 
 	// for nicknames!
 	sock.on('nick', function(nickname) {
-		if (!users.contains(nickname) && nickname == nickname.escape()) {
+		if (!users.contains(nickname) && nickname == nickname.escape().trim()) {
 			users[sock.id] = nickname;
 			sock.emit('join', users.prepare());
 			sock.broadcast.emit('userjoin', nickname);
