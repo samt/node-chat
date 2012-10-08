@@ -37,10 +37,10 @@
 				clear:both;
 			}
 			.join {
-				font-color: #0A0;
+				color: #0A0;
 			}
 			.quit {
-				font-color: #A00;
+				color: #A00;
 			}
 		</style>
 	</head>
@@ -95,6 +95,7 @@
 					var msg = $('#message').val();
 					socket.emit('msg', msg);
 					$('#message-viewport').append('<div>&lt;' + nick + '&gt; ' + msg + '</div>');
+					$("#message-viewport").scrollTop($("#message-viewport")[0].scrollHeight);
 					$('#message').val('');
 				});
 
@@ -125,6 +126,7 @@
 					users.push(u);
 					$('#message-users').trigger('update-users');
 					$('#message-viewport').append('<div class="join"> -- ' + u + ' has joined -- </div>');
+					$("#message-viewport").scrollTop($("#message-viewport")[0].scrollHeight);
 				});
 
 				// when any user leaves
@@ -132,10 +134,12 @@
 					users.splice(users.indexOf(u), 1);
 					$('#message-users').trigger('update-users');
 					$('#message-viewport').append('<div class="quit"> -- ' + u + ' has quit -- </div>');
+					$("#message-viewport").scrollTop($("#message-viewport")[0].scrollHeight);
 				});
 
 				socket.on('msg', function(m) {
 					$('#message-viewport').append('<div>&lt;' + m.nick + '&gt; ' + m.text + '</div>');
+					$("#message-viewport").scrollTop($("#message-viewport")[0].scrollHeight);
 				});
 			});
 		</script>
